@@ -1,0 +1,63 @@
+import groovy.time.TimeCategory
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.6'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.learning.cache'
+version = '1.0.0'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+test {
+	jvmArgs = ["-Dfile.encoding=UTF-8"]
+	useJUnitPlatform()
+	dependsOn 'cleanTest'
+	testLogging {
+		exceptionFormat = "full"
+		events = ["FAILED", "STARTED", "PASSED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR"]
+		showStandardStreams = false
+		afterSuite { desc, result ->
+			if (!desc.parent) {
+				println "Tests run: ${result.testCount}, Failures: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}"
+			}
+		}
+		afterTest { descriptor, result ->
+			def duration = TimeCategory.minus(new Date(result.endTime), new Date(result.startTime)).toString()
+			println "\n$descriptor.name took $duration"
+		}
+	}
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	// mysql
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'mysql:mysql-connector-java:8.0.28'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	//Redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.30'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
